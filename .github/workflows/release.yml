@@ -21,7 +21,7 @@ jobs:
         id: repository_owner
         uses: ASzc/change-string-case-action@v6
         with:
-          string: ${{ github.repository_owner }}
+          string: ${{ github.repository }}
 
       - name: Set derived environment variable
         run: echo "IMAGE_NAME=$REGISTRY/${{ github.steps.repository_owner.outputs.lowercase }}" >> $GITHUB_ENV
