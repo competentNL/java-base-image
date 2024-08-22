@@ -64,6 +64,28 @@ jobs:
           sudo apt-get install -y python3-pip
           sudo pip3 install docker-squash
 
+      - name: Save Docker image
+        run: |
+          docker save ${{ env.IMAGE_NAME }} -o image.tar
+
+      - name: Squash Docker image
+        run: |
+          sudo docker-squash -i image.tar -o squashed-image.tar -t ${{ env.IMAGE_NAME }}:squashed
+
+      - name: Load Squashed Image
+        run: |
+          docker load -i squashed-image.tar
+
+      - name: Push to the registry
+        id: push
+        run: docker image push "${{ env.IMAGE_NAME }}" --all-tags
+
+
+
+
+
+
+
       - name: Squash Docker image
         run: |
           docker save  ${{ env.IMAGE_NAME }}:latest | sudo docker-squash -t  ${{ env.IMAGE_NAME }}:squashed | docker load
