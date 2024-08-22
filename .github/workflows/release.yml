@@ -1,0 +1,54 @@
+name: Release application
+
+on:
+  push:
+    branches:
+      - 'develop'
+      - 'main'
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  deploy:
+    name: Publish to github registry
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set derived environment variable
+        run: echo "IMAGE_NAME=$REGISTRY/${{ github.repository }}" >> $GITHUB_ENV
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker image
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=tag
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha
+            type=raw,latest
+            type=raw,value={{date 'YYYYMMDD-HHmm'}}
+            type=edge
+
+      - name: Build and push Docker image
+        id: push
+        uses: docker/build-push-action@v6
+        with:
+          context: cnl-java-base
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
