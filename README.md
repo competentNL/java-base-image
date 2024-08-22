@@ -9,4 +9,4 @@ All CNL java based images are dependent on this base image.
 
 Use the following command to add it to our local repository.
 
-``docker build -t "ghcr.io/competentnl/cnl-java-base" .``
+``docker build -t "ghcr.io/competentnl/java-base-image" .``
