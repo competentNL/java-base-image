@@ -58,15 +58,15 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-      - name: Slim image
-        id: slim
-        uses: kitabisa/docker-slim-action@v1
-        env:
-          DSLIM_HTTP_PROBE: false
-          DSLIM_PRESERVE_PATH_FILE: preserved-paths.txt
-        with:
-          target: ${{ env.IMAGE_NAME }}:latest
-          tag: "slim"
+      - name: Install Docker-Squash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-pip
+          sudo pip3 install docker-squash
+
+      - name: Squash Docker image
+        run: |
+          docker save  ${{ env.IMAGE_NAME }}:latest | sudo docker-squash -t  ${{ env.IMAGE_NAME }}:squashed | docker load
 
       - name: Push to the registry
         id: push
