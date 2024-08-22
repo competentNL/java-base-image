@@ -8,7 +8,8 @@ USER root
 #
 # harden environment
 #
-RUN rpm -e --nodeps $(rpm -qa '*rpm*' '*dnf*' '*libsolv*' '*hawkey*' '*yum*' '*python*') && \
+RUN mkdir /application && \
+    rpm -e --nodeps $(rpm -qa '*rpm*' '*dnf*' '*libsolv*' '*hawkey*' '*yum*' '*python*') && \
     chgrp -R 0 /application && \
     chmod -R g=u /application
 
