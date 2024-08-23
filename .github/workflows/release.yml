@@ -3,8 +3,9 @@ name: Release application
 on:
   push:
     branches:
-      - 'develop'
       - 'main'
+  schedule:
+    - cron: '0 0 * * 5'  # This runs the pipeline every Friday at 00:00
 
 env:
   REGISTRY: ghcr.io
@@ -65,8 +66,7 @@ jobs:
           sudo pip3 install docker-squash
 
       - name: Squash Docker image
-        run: |
-          sudo docker-squash -t ${{ env.IMAGE_NAME }}:squashed ${{ env.IMAGE_NAME }}:latest
+        run: sudo docker-squash -t ${{ env.IMAGE_NAME }}:latest-squashed ${{ env.IMAGE_NAME }}:latest
 
       - name: Push to the registry
         id: push
