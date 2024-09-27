@@ -59,15 +59,6 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-      - name: Install Docker-Squash
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y python3-pip
-          sudo pip3 install docker-squash
-
-      - name: Squash Docker image
-        run: sudo docker-squash -t ${{ env.IMAGE_NAME }}:latest-squashed ${{ env.IMAGE_NAME }}:latest
-
       - name: Push to the registry
         id: push
-        run: docker image push "${{ env.IMAGE_NAME }}" --all-tags
+        run: docker image push --all-tags ${{ env.IMAGE_NAME }}
