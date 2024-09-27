@@ -3,7 +3,7 @@ FROM registry.access.redhat.com/ubi9/openjdk-21-runtime
 LABEL owner="CompetentNL"
 EXPOSE 8080
 
-USER root
+USER 0
 
 #
 # harden environment
