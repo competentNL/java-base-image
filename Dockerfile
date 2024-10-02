@@ -1,6 +1,6 @@
 FROM registry.access.redhat.com/ubi9/openjdk-21-runtime
 
-LABEL owner="CompetentNL"
+LABEL owner="UWV"
 EXPOSE 8080
 
 USER 0
