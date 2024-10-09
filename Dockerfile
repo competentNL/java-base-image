@@ -4,12 +4,11 @@ LABEL owner="CompetentNL"
 EXPOSE 8080
 
 USER 0
-
 #
 # harden environment
 #
 RUN mkdir /application && \
-    rpm -e --nodeps $(rpm -qa '*rpm*' '*dnf*' '*libsolv*' '*hawkey*' '*yum*' '*python*') && \
+    rpm -e --nodeps --allmatches $(rpm -qa '*rpm*' '*dnf*' '*libsolv*' '*hawkey*' '*yum*' '*python*') && \
     chgrp -R 0 /application && \
     chmod -R g=u /application
 
