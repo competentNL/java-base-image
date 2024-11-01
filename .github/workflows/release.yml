@@ -55,10 +55,6 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          push: false
+          push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-
-      - name: Push to the registry
-        id: push
-        run: docker image push --all-tags ${{ env.IMAGE_NAME }}
