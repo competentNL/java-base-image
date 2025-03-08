@@ -1,0 +1,26 @@
+name: Delete old images
+
+on:
+  schedule:
+    - cron: "0 0 * * 1" # This runs the pipeline every Monday at 00:00
+  workflow_dispatch:  # Allow manual triggering
+
+jobs:
+  clean:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract Repository Information
+        run: |
+          REPO_OWNER=$(echo $GITHUB_REPOSITORY | cut -d '/' -f 1)
+          REPO_NAME=$(echo $GITHUB_REPOSITORY | cut -d '/' -f 2)
+          echo "REPO_OWNER=$REPO_OWNER" >> $GITHUB_ENV
+          echo "REPO_NAME=$REPO_NAME" >> $GITHUB_ENV
+
+      - uses: snok/container-retention-policy@v3.0.0
+        with:
+          account: ${{ github.repository_owner }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          image-names: ${{ env.REPO_NAME }}
+          image-tags: "!test* !main* !rel* !latest sha-* 202*"
+          tag-selection: both
+          cut-off: 4w
