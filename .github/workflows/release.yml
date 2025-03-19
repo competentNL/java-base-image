@@ -9,6 +9,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
+  BASE_IMAGE: registry.access.redhat.com/ubi9/openjdk-21-runtime:latest
 
 jobs:
   deploy:
@@ -34,6 +35,12 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Pull base image and get SHA256 hash
+        run: |
+            docker pull ${{ env.BASE_IMAGE }}
+            BASE_IMAGE_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ${{ env.BASE_IMAGE }})
+            echo "BASE_IMAGE_DIGEST=$BASE_IMAGE_DIGEST" >> $GITHUB_ENV
+
       - name: Extract metadata (tags, labels) for Docker image
         id: meta
         uses: docker/metadata-action@v5
@@ -50,6 +57,10 @@ jobs:
             type=raw,value={{date 'YYYYMMDD-HHmm'}}
             type=edge
 
+      - name: Add custom label for base image digest
+        run: |
+          echo "org.opencontainers.image.base.digest=${BASE_IMAGE_DIGEST#*@}" >> $GITHUB_ENV
+
       - name: Build Docker image
         id: build
         uses: docker/build-push-action@v6
@@ -58,4 +69,6 @@ jobs:
           push: true
           no-cache: 'true'
           tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          labels: |
+            ${{ steps.meta.outputs.labels }}
+            org.opencontainers.image.base.digest=${BASE_IMAGE_DIGEST#*@}
