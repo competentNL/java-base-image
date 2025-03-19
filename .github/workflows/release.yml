@@ -39,7 +39,7 @@ jobs:
         run: |
             docker pull ${{ env.BASE_IMAGE }}
             BASE_IMAGE_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ${{ env.BASE_IMAGE }})
-            echo "BASE_IMAGE_DIGEST=${BASE_IMAGE_DIGEST#*@}" >> $GITHUB_ENV
+            echo "BASE_IMAGE_DIGEST=${BASE_IMAGE_DIGEST}" >> $GITHUB_ENV
 
       - name: Extract metadata (tags, labels) for Docker image
         id: meta
