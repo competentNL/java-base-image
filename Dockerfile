@@ -7,7 +7,7 @@ USER 0
 
 # Harden the environment by removing unnecessary packages
 RUN mkdir /application && \
-    rpm -e --nodeps $(rpm -qa '*rpm*' '*dnf*' '*libsolv*' '*hawkey*' '*yum*' '*python*' '*libarchive*' '*krb5*' '*cups-libs*') && \
+    rpm -e --nodeps $(rpm -qa '*rpm*' '*dnf*' '*libsolv*' '*hawkey*' '*yum*' '*python*') && \
     chgrp -R 0 /application && \
     chmod -R g=u /application
 
