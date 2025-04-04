@@ -66,4 +66,4 @@ jobs:
 
       - name: Flatten Image with Docker-Slim
         run: |
-          docker-slim build --target ghcr.io/competentnl/java-base-image:latest --output-dir ./flattened-image
+          slim build --target ghcr.io/competentnl/java-base-image:latest --output-dir ./flattened-image
