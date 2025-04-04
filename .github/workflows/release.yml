@@ -59,46 +59,42 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
+      # Step 7: Flatten image into a single layer while preserving metadata
       - name: Flatten into single layer
         run: |
-          set -x  # Enable verbose logging
-          sudo apt-get update && sudo apt-get install -y jq
-          
-          # Get image ID
+          set -x
+
+          # Get image ID of the built image
           IMAGE_ID=$(docker images --filter "reference=${{ env.IMAGE_NAME }}" --format "{{.ID}}" | head -1)
           echo "Image ID: $IMAGE_ID"
-          if [ -z "$IMAGE_ID" ]; then
-            echo "Error: Image ID not found!"
-            exit 1
-          fi
-          
-          # Extract labels and metadata from original image
-          JSON_LABELS=$(docker inspect $IMAGE_ID | jq -r '.[0].Config.Labels')
-          LABEL_ARGS=$(echo $JSON_LABELS | jq -r 'to_entries[] | "--change LABEL=\(.key)=\(.value)"' | tr '\n' ' ')
-          
-          # Create container
+          if [ -z "$IMAGE_ID" ]; then echo "Error: Image ID not found!"; exit 1; fi
+
+          # Create a container from the image and export its filesystem to a tarball
           docker create --name temp-container $IMAGE_ID || { echo "Failed to create container"; exit 1; }
-          
-          # Export filesystem
           docker export temp-container -o app.tar || { echo "Export failed"; exit 1; }
-          ls -lh app.tar  # Verify file exists and size
-          
-          # Import with metadata
-          docker import \
-            $LABEL_ARGS \
-            --change "USER 1001" \
-            --change "ENV TZ=Europe/Amsterdam" \
-            --change "LABEL owner=UWV" \
-            --change "LABEL tbd-required-label=tbd-required-value" \
-            app.tar ${{ env.IMAGE_NAME }}:single-layer || { echo "Import failed"; exit 1; }
-          
-          # Cleanup
-          docker rm temp-container
-          rm app.tar
-          
-          # Tag with original metadata tags
+          chmod a+r app.tar  # Ensure the tarball is readable by Docker
+
+          # Extract labels from the original image and dynamically generate a Dockerfile.flattened
+          echo "FROM scratch" > Dockerfile.flattened
+          echo "ADD app.tar /" >> Dockerfile.flattened
+          echo "USER 1001" >> Dockerfile.flattened
+          echo "ENV TZ=Europe/Amsterdam" >> Dockerfile.flattened
+
+          # Add all labels from the original image to the Dockerfile.flattened
+          docker inspect $IMAGE_ID | jq -r '.[0].Config.Labels | to_entries[] | "LABEL \(.key)=\"\(.value)\""' >> Dockerfile.flattened
+
+          # Build a new single-layer image using the flattened Dockerfile
+          docker build -t ${{ env.IMAGE_NAME }}:single-layer -f Dockerfile.flattened .
+
+          # Cleanup temporary files and containers
+          docker rm temp-container || true
+          rm app.tar Dockerfile.flattened || true
+
+      # Step 8: Push single-layer image to registry with original tags and metadata
+      - name: Push single-layer image to registry
+        run: |
           for TAG in $(echo "${{ steps.meta.outputs.tags }}" | tr ',' ' '); do
-            docker tag ${{ env.IMAGE_NAME }}:single-layer $TAG
+            docker tag ${{ env.IMAGE_NAME }}:single-layer $TAG;
           done
 
       - name: Push single-layer image
