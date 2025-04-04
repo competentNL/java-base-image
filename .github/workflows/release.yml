@@ -90,3 +90,12 @@ jobs:
           # Cleanup
           docker rm temp-container
           rm app.tar
+          
+          # Tag with original metadata tags
+          for TAG in $(echo "${{ steps.meta.outputs.tags }}" | tr ',' ' '); do
+            docker tag ${{ env.IMAGE_NAME }}:single-layer $TAG
+          done
+
+      - name: Push single-layer image
+        run: |
+          docker push --all-tags ${{ env.IMAGE_NAME }}
