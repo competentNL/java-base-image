@@ -72,6 +72,10 @@ jobs:
             exit 1
           fi
           
+          # Extract labels and metadata from original image
+          JSON_LABELS=$(docker inspect $IMAGE_ID | jq -r '.[0].Config.Labels')
+          LABEL_ARGS=$(echo $JSON_LABELS | jq -r 'to_entries[] | "--change LABEL=\(.key)=\(.value)"' | tr '\n' ' ')
+          
           # Create container
           docker create --name temp-container $IMAGE_ID || { echo "Failed to create container"; exit 1; }
           
@@ -81,6 +85,7 @@ jobs:
           
           # Import with metadata
           docker import \
+            $LABEL_ARGS \
             --change "USER 1001" \
             --change "ENV TZ=Europe/Amsterdam" \
             --change "LABEL owner=UWV" \
