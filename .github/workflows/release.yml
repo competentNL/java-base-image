@@ -59,7 +59,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-      # Step 7: Flatten image into a single layer while preserving metadata
+      # Flatten image into a single layer while preserving metadata
       - name: Flatten into single layer
         run: |
           set -x
@@ -90,7 +90,6 @@ jobs:
           docker rm temp-container || true
           rm app.tar Dockerfile.flattened || true
 
-      # Step 8: Push single-layer image to registry with original tags and metadata
       - name: Push single-layer image to registry
         run: |
           for TAG in $(echo "${{ steps.meta.outputs.tags }}" | tr ',' ' '); do
