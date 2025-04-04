@@ -55,15 +55,29 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          push: true
-          no-cache: 'true'
+          push: false
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-      - name: Install Docker-Slim
+      - name: Flatten into single layer
         run: |
-          curl -sL https://raw.githubusercontent.com/slimtoolkit/slim/master/scripts/install-slim.sh | sudo -E bash -
+          # Install jq for JSON parsing
+          sudo apt-get update && sudo apt-get install -y jq
 
-      - name: Flatten Image with Docker-Slim
-        run: |
-          slim build --target ghcr.io/competentnl/java-base-image:latest --output-dir ./flattened-image
+          # Get image ID of the built image
+          IMAGE_ID=$(docker images --filter "reference=${{ env.IMAGE_NAME }}" --format "{{.ID}}" | head -1)
+
+          # Extract labels and metadata from original image
+          JSON_LABELS=$(docker inspect $IMAGE_ID | jq -r '.[0].Config.Labels')
+          LABEL_ARGS=$(echo $JSON_LABELS | jq -r 'to_entries[] | "--change LABEL=\(.key)=\(.value)"' | tr '\n' ' ')
+
+          # Export/import to flatten layers
+          docker create --name temp-container $IMAGE_ID
+          docker export temp-container -o app.tar
+          docker import \
+            $LABEL_ARGS \
+            --change "USER 1001" \
+            --change "ENV TZ=Europe/Amsterdam" \
+            --change "LABEL owner=UWV" \
+            --change "LABEL tbd-required-label=tbd-required-value" \
+            app.tar ${{ env.IMAGE_NAME }}:single-layer
