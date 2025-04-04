@@ -61,23 +61,32 @@ jobs:
 
       - name: Flatten into single layer
         run: |
-          # Install jq for JSON parsing
+          set -x  # Enable verbose logging
           sudo apt-get update && sudo apt-get install -y jq
-
-          # Get image ID of the built image
+          
+          # Get image ID
           IMAGE_ID=$(docker images --filter "reference=${{ env.IMAGE_NAME }}" --format "{{.ID}}" | head -1)
-
-          # Extract labels and metadata from original image
-          JSON_LABELS=$(docker inspect $IMAGE_ID | jq -r '.[0].Config.Labels')
-          LABEL_ARGS=$(echo $JSON_LABELS | jq -r 'to_entries[] | "--change LABEL=\(.key)=\(.value)"' | tr '\n' ' ')
-
-          # Export/import to flatten layers
-          docker create --name temp-container $IMAGE_ID
-          docker export temp-container -o app.tar
+          echo "Image ID: $IMAGE_ID"
+          if [ -z "$IMAGE_ID" ]; then
+            echo "Error: Image ID not found!"
+            exit 1
+          fi
+          
+          # Create container
+          docker create --name temp-container $IMAGE_ID || { echo "Failed to create container"; exit 1; }
+          
+          # Export filesystem
+          docker export temp-container -o app.tar || { echo "Export failed"; exit 1; }
+          ls -lh app.tar  # Verify file exists and size
+          
+          # Import with metadata
           docker import \
-            $LABEL_ARGS \
             --change "USER 1001" \
             --change "ENV TZ=Europe/Amsterdam" \
             --change "LABEL owner=UWV" \
             --change "LABEL tbd-required-label=tbd-required-value" \
-            app.tar ${{ env.IMAGE_NAME }}:single-layer
+            app.tar ${{ env.IMAGE_NAME }}:single-layer || { echo "Import failed"; exit 1; }
+          
+          # Cleanup
+          docker rm temp-container
+          rm app.tar
