@@ -6,7 +6,10 @@ LABEL tbd-required-label="tbd-required-value"
 USER root
 
 # Harden the environment by removing unnecessary packages
-RUN rpm -e --nodeps $(rpm -qa '*rpm*' '*dnf*' '*libsolv*' '*hawkey*' '*yum*' '*python*')
+RUN mkdir /application && \
+    rpm -e --nodeps $(rpm -qa '*rpm*' '*dnf*' '*libsolv*' '*hawkey*' '*yum*' '*python*') && \
+    chgrp -R 0 /application && \
+    chmod -R g=u /application
 
 # Switch to the non-root user
 USER 1001
