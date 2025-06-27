@@ -6,6 +6,7 @@ on:
       - 'main'
   schedule:
     - cron: '0 0 * * 5'  # This runs the pipeline every Friday at 00:00
+  workflow_dispatch:  # Allow manual triggering
 
 env:
   REGISTRY: ghcr.io
