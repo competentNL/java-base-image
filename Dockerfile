@@ -1,7 +1,6 @@
 FROM registry.access.redhat.com/ubi9/openjdk-21-runtime
 
 LABEL owner="UWV"
-LABEL tbd-required-label="tbd-required-value"
 
 USER root
 
