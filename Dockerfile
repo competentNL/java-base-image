@@ -1,6 +1,7 @@
 FROM registry.access.redhat.com/ubi9/openjdk-21-runtime
 
 LABEL owner="UWV"
+LABEL team="CompetentNL"
 
 USER root
 
