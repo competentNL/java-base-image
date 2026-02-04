@@ -23,4 +23,4 @@ jobs:
           image-names: ${{ env.REPO_NAME }}
           image-tags: "!test* !main* !rel* !latest sha-* 202*"
           tag-selection: both
-          cut-off: 26w
+          cut-off: 2w
