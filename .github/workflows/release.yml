@@ -41,6 +41,7 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ steps.string.outputs.lowercase }}
           tags: |
             type=raw,value=${{ matrix.java-version }}
+            type=raw,value=latest,enable=${{ matrix.java-version == '21' }}
             type=raw,value=java${{ matrix.java-version }}-latest
             type=raw,value=java${{ matrix.java-version }}-{{date 'YYYYMMDD-HHmm'}}
             type=sha,suffix=-java${{ matrix.java-version }}
