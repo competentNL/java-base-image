@@ -6,6 +6,7 @@ LABEL team="CompetentNL"
 USER root
 
 COPY uwv-ca.pem /etc/pki/ca-trust/source/anchors/
+COPY uwv-mcpaas-ap.pem /etc/pki/ca-trust/source/anchors/
 RUN update-ca-trust
 
 # Harden the environment by removing unnecessary packages
