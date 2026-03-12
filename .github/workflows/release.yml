@@ -13,23 +13,22 @@ env:
 
 jobs:
   deploy:
-    name: Publish to github registry
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java-version: [ '21', '25' ]
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: repo name to lowercase
-        id: repository_owner
+      - name: Repo name to lowercase
+        id: string
         uses: ASzc/change-string-case-action@v6
         with:
           string: ${{ github.repository }}
 
-      - name: Set derived environment variable
-        run: echo "IMAGE_NAME=$REGISTRY/${{ steps.repository_owner.outputs.lowercase }}" >> $GITHUB_ENV
-
       - name: Log in to the Container registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -39,23 +38,17 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.IMAGE_NAME }}
+          images: ${{ env.REGISTRY }}/${{ steps.string.outputs.lowercase }}
           tags: |
-            type=ref,event=branch
-            type=ref,event=tag
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=sha
-            type=raw,latest
-            type=raw,value={{date 'YYYYMMDD-HHmm'}}
-            type=edge
+            type=raw,value=java${{ matrix.java-version }}-latest
+            type=raw,value=java${{ matrix.java-version }}-{{date 'YYYYMMDD-HHmm'}}
+            type=sha,suffix=-java${{ matrix.java-version }}
 
-      - name: Build Docker image
-        id: build
-        uses: docker/build-push-action@v6
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
         with:
           context: .
+          file: Dockerfile-java${{ matrix.java-version }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

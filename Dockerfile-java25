@@ -1,9 +1,12 @@
-FROM registry.access.redhat.com/ubi9/openjdk-21-runtime
+FROM registry.access.redhat.com/ubi9/openjdk-25-runtime
 
 LABEL owner="UWV"
 LABEL team="CompetentNL"
 
 USER root
+
+COPY uwv-ca.pem /etc/pki/ca-trust/source/anchors/
+RUN update-ca-trust
 
 # Harden the environment by removing unnecessary packages
 RUN mkdir /application && \
