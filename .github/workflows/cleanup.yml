@@ -21,6 +21,6 @@ jobs:
           account: ${{ github.repository_owner }}
           token: ${{ secrets.GITHUB_TOKEN }}
           image-names: ${{ env.REPO_NAME }}
-          image-tags: "!test* !main* !rel* !latest sha-* 202*"
+          image-tags: "!21 !25 !java21-latest !java25-latest !latest sha-* java2*"
           tag-selection: both
           cut-off: 2w

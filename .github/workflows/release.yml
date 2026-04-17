@@ -44,7 +44,6 @@ jobs:
             type=raw,value=latest,enable=${{ matrix.java-version == '21' }}
             type=raw,value=java${{ matrix.java-version }}-latest
             type=raw,value=java${{ matrix.java-version }}-{{date 'YYYYMMDD-HHmm'}}
-            type=sha,suffix=-java${{ matrix.java-version }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
