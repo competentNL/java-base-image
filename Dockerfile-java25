@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi9/openjdk-25-runtime
+FROM registry.access.redhat.com/ubi10/openjdk-25-runtime
 
 LABEL owner="UWV"
 LABEL team="CompetentNL"
