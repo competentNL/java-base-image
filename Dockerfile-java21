@@ -15,6 +15,8 @@ RUN mkdir /application && \
     chgrp -R 0 /application && \
     chmod -R g=u /application
 
+ENV JDK_JAVA_OPTIONS="-XX:MaxRAMPercentage=80.0"
+
 # Switch to the non-root user
 USER 185
 
